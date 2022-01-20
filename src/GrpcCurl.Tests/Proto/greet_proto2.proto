@@ -1,0 +1,15 @@
+syntax = "proto2";
+
+package greet;
+
+service GreeterProto2 {
+  rpc SayGroup (TryGroup) returns (TryGroup);
+}
+
+message TryGroup {
+	required group Result = 1 {
+		required string url = 2;
+		required string title = 3;
+		required string snippets = 4;
+	}
+}

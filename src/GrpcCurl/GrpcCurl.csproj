@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>grpc-curl</AssemblyName>
+    <PackageId>$(AssemblyName)</PackageId>
+    <ToolCommandName>$(AssemblyName)</ToolCommandName>
+    <ApplicationIcon>..\..\img\grpc-curl.ico</ApplicationIcon>
+    <Description>grpc-curl is a command line tool for interacting with gRPC servers.</Description>
+    <PackAsTool>true</PackAsTool>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.Net.Client" Version="2.41.0" />
+    <PackageReference Include="Mono.Options" Version="6.12.0.148" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+
+    <PackageReference Include="Packaging.Targets" Version="0.1.189">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>compile;build</IncludeAssets>
+      <ExcludeAssets>runtime;contentFiles;native</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DynamicGrpc\DynamicGrpc.csproj" />
+  </ItemGroup>
+
+</Project>
