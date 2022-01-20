@@ -10,6 +10,8 @@ This tool is the .NET equivalent of the popular [gRPCurl](https://github.com/ful
 
 ## Usage
 
+`grpc-curl` currently requires that the gRPC server has activated gRPC reflection.
+
 ```powershell
 ./grpc-curl --json -d "{""getStatus"":{}}" 192.168.100.1:9200 SpaceX.API.Device.Device/Handle
 ```
