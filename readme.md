@@ -2,7 +2,9 @@
 
 <img align="right" width="160px" height="160px" src="https://raw.githubusercontent.com/xoofx/grpc-curl/master/img/grpc-curl.png">
 
-`grpc-curl` is a command line tool for interacting with gRPC servers. This tool is the .NET equivalent of the popular [gRPCurl](https://github.com/fullstorydev/grpcurl) written in Golang.
+`grpc-curl` is a command line tool for interacting with gRPC servers. 
+
+This tool is the .NET equivalent of the popular [gRPCurl](https://github.com/fullstorydev/grpcurl) written in Golang.
 
 > NOTE: `grpc-curl` doesn't not support yet all the features that `gRPCurl` is providing.
 
