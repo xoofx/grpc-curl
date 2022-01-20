@@ -1,6 +1,6 @@
-# grpc-curl [![Build Status](https://github.com/xoofx/grpc-curl/workflows/ci/badge.svg?branch=master)](https://github.com/xoofx/grpc-curl/actions) [![Coverage Status](https://coveralls.io/repos/github/xoofx/grpc-curl/badge.svg?branch=master)](https://coveralls.io/github/xoofx/grpc-curl?branch=master) [![NuGet](https://img.shields.io/nuget/v/grpc-curl.svg)](https://www.nuget.org/packages/grpc-curl/)
+# grpc-curl [![Build Status](https://github.com/xoofx/grpc-curl/workflows/ci/badge.svg?branch=main)](https://github.com/xoofx/grpc-curl/actions) [![Coverage Status](https://coveralls.io/repos/github/xoofx/grpc-curl/badge.svg?branch=main)](https://coveralls.io/github/xoofx/grpc-curl?branch=master) [![NuGet](https://img.shields.io/nuget/v/grpc-curl.svg)](https://www.nuget.org/packages/grpc-curl/)
 
-<img align="right" width="160px" height="160px" src="https://raw.githubusercontent.com/xoofx/grpc-curl/master/img/grpc-curl.png">
+<img align="right" width="160px" height="160px" src="https://raw.githubusercontent.com/xoofx/grpc-curl/main/img/grpc-curl.png">
 
 `grpc-curl` is a command line tool for interacting with gRPC servers. 
 
