@@ -32,11 +32,16 @@ public class GrpcCurlApp
             $"Copyright (C) {DateTime.Now.Year} Alexandre Mutel. All Rights Reserved",
             $"{exeName} - Version: {version}",
             _,
-            $"Usage: {exeName} [options] host:port service/method",
+            $"Usage: {exeName} [options] address service/method",
+            _,
+            $"  address: A http/https URL or a simple host:address.",
+            $"           If only host:address is used, HTTPS is used by default",
+            $"           unless the options --http is passed.",
             _,
             "## Options",
             _,
-            { "d=", "Data for string content.", v => options.Data = ParseJson(v) },
+            { "d|data=", "Data for string content.", v => options.Data = ParseJson(v) },
+            { "http", "Use HTTP instead of HTTPS unless the protocol is specified directly on the address.", v => options.ForceHttp = true },
             { "json", "Use JSON naming for input and output.", v => options.UseJsonNaming = true },
             { "v|verbosity:", "Set verbosity.", v => options.Verbose = true },
             { "h|help", "Show this help.", v => showHelp = true },
@@ -87,7 +92,7 @@ public class GrpcCurlApp
 
     public static async Task<int> Run(GrpcCurlOptions options)
     {
-        var httpAddress = options.Address.StartsWith("http") ? options.Address : $"http://{options.Address}";
+        var httpAddress = options.Address.StartsWith("http") ? options.Address : $"{(options.ForceHttp?"http":"https")}://{options.Address}";
         var channel = GrpcChannel.ForAddress(httpAddress);
 
         var client = await DynamicGrpcClient.FromServerReflection(channel, new DynamicGrpcClientOptions()
