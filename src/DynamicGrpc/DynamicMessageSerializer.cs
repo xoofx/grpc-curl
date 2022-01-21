@@ -339,17 +339,17 @@ internal sealed class DynamicMessageSerializer
 
 
         // Special case for any, we are converting them on the fly
-        if (Descriptor.FullName == "google.protobuf.Any")
+        if (Descriptor.FullName == DynamicAnyExtensions.GoogleTypeAnyFullName)
         {
             // The input type is an any. Expecting the property @type to be part of it
-            if (result.TryGetValue("type_url", out var typeUrlObject) && typeUrlObject is string typeUrl)
+            if (result.TryGetValue(DynamicAnyExtensions.GoogleTypeUrlKey, out var typeUrlObject) && typeUrlObject is string typeUrl)
             {
                 var typeName = Google.Protobuf.WellKnownTypes.Any.GetTypeName(typeUrl);
                 if (DescriptorSet.TryFindMessageDescriptorProto(typeName, out var serializer))
                 {
-                    if (!result.TryGetValue("value", out var dataValueObject) || dataValueObject is not byte[] dataValue)
+                    if (!result.TryGetValue(DynamicAnyExtensions.GoogleValueKey, out var dataValueObject) || dataValueObject is not byte[] dataValue)
                     {
-                        throw new DynamicGrpcClientException($"Invalid message value for any type.");
+                        throw new DynamicGrpcClientException($"Invalid message for type `Any`. `{DynamicAnyExtensions.GoogleValueKey}` not found or with an invalid type.");
                     }
 
                     var newResult = context.Factory();
@@ -357,20 +357,19 @@ internal sealed class DynamicMessageSerializer
                     var message = new DynamicMessage(serializer, newResult, context);
                     stream.ReadRawMessage(message);
                     newResult = message.Value;
-                    newResult["@type"] = typeUrl;
+                    newResult[DynamicAnyExtensions.TypeKey] = typeUrl;
                     result = newResult;
                 }
                 else
                 {
-                    throw new DynamicGrpcClientException($"Invalid message type name `{typeName}` not found for an Any type.");
+                    throw new DynamicGrpcClientException($"Invalid message type name `{typeName}` not found for the type `Any`.");
                 }
             }
             else
             {
-                throw new DynamicGrpcClientException($"Expecting an any type but the input dictionary doesn't contain a type_url property.");
+                throw new DynamicGrpcClientException($"Expecting the type `Any` but the input dictionary doesn't contain a `{DynamicAnyExtensions.GoogleTypeUrlKey}` property.");
             }
         }
-
 
         return result;
     }
@@ -804,11 +803,10 @@ internal sealed class DynamicMessageSerializer
         }
     }
 
-
     private IDictionary<string, object> FilterAny(IDictionary<string, object> value, DynamicGrpcClientContext context)
     {
         // Special case for any, we are converting them on the fly
-        if (Descriptor.FullName == "google.protobuf.Any")
+        if (Descriptor.FullName == DynamicAnyExtensions.GoogleTypeAnyFullName)
         {
             if (context.MapToAny.TryGetValue(value, out var any))
             {
@@ -816,7 +814,7 @@ internal sealed class DynamicMessageSerializer
             }
 
             // The input type is an any. Expecting the property @type to be part of it
-            if (value.TryGetValue("@type", out var typeUrlObject) && typeUrlObject is string typeUrl)
+            if (value.TryGetValue(DynamicAnyExtensions.TypeKey, out var typeUrlObject) && typeUrlObject is string typeUrl)
             {
                 var typeName = Google.Protobuf.WellKnownTypes.Any.GetTypeName(typeUrl);
                 if (DescriptorSet.TryFindMessageDescriptorProto(typeName, out var serializer))
@@ -824,7 +822,7 @@ internal sealed class DynamicMessageSerializer
                     var memoryStream = new MemoryStream();
                     {
                         var copy = new Dictionary<string, object>(value);
-                        copy.Remove("@type");
+                        copy.Remove(DynamicAnyExtensions.TypeKey);
                         var stream = new CodedOutputStream(memoryStream);
                         var message = new DynamicMessage(serializer, copy, context);
                         stream.WriteRawMessage(message);
@@ -833,26 +831,24 @@ internal sealed class DynamicMessageSerializer
                     var byteBuffer = memoryStream.ToArray();
                     var newValue = new Dictionary<string, object>
                     {
-                        ["type_url"] = typeUrl,
-                        ["value"] = byteBuffer
+                        [DynamicAnyExtensions.GoogleTypeUrlKey] = typeUrl,
+                        [DynamicAnyExtensions.GoogleValueKey] = byteBuffer
                     };
                     context.MapToAny[value] = newValue;
                     value = newValue;
                 }
                 else
                 {
-                    throw new DynamicGrpcClientException($"Invalid message type name `{typeName}` not found for an Any type.");
+                    throw new DynamicGrpcClientException($"Invalid message type name `{typeName}` not found for the type `Any`.");
                 }
             }
             else
             {
-                throw new DynamicGrpcClientException($"Expecting an any type but the input dictionary doesn't contain a @type property.");
+                throw new DynamicGrpcClientException($"Expecting the type `Any` but the input dictionary doesn't contain a `{DynamicAnyExtensions.TypeKey}` property.");
             }
         }
         return value;
     }
-
-
 
     public int ComputeSize(IDictionary<string, object> value, DynamicGrpcClientContext context)
     {
