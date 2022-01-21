@@ -17,7 +17,7 @@ public class GrpcCurlOptions
 
     public bool UseJsonNaming { get; set; }
 
-    public IDictionary<string, object>? Data { get; set; }
+    public object? Data { get; set; }
 
     public bool Verbose { get; set; }
 }

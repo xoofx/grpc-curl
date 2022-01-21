@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using DynamicGrpc;
+using Grpc.Core;
 using Grpc.Net.Client;
 using Mono.Options;
 using Newtonsoft.Json;
@@ -95,11 +96,62 @@ public class GrpcCurlApp
         });
 
         Debug.Assert(options.Data != null);
-        var result = await client.AsyncUnaryCall(options.Service, options.Method, options.Data);
 
+
+        if (!client.TryFindMethod(options.Service, options.Method, out var methodDescriptor))
+        {
+            throw new GrpcCurlException($"Unable to find the method `{options.Service}/{options.Method}`");
+        }
+
+        // Parse Input
+        var input = new List<IDictionary<string, object>>();
+
+        if (options.Data is IEnumerable<object> it)
+        {
+            int index = 0;
+            foreach (var item in it)
+            {
+
+                if (item is IDictionary<string, object> dict)
+                {
+                    input.Add(dict);
+                }
+                else
+                {
+                    throw new GrpcCurlException($"Invalid type `{item?.GetType()?.FullName}` from the input array at index [{index}]. Expecting an object.");
+                }
+                index++;
+            }
+        }
+        else if (options.Data is IDictionary<string, object> dict)
+        {
+            input.Add(dict);
+        }
+        else
+        {
+            throw new GrpcCurlException($"Invalid type `{options.Data?.GetType()?.FullName}` from the input. Expecting an object.");
+        }
+
+        // Perform the async call
+        await foreach (var result in client.AsyncDynamicCall(options.Service, options.Method, ToAsync(input)))
+        {
+            WriteResultToConsole(result);
+        }
+        return 0;
+    }
+
+    private static async IAsyncEnumerable<IDictionary<string, object>> ToAsync(IEnumerable<IDictionary<string, object>> input)
+    {
+        foreach (var item in input)
+        {
+            yield return await ValueTask.FromResult(item);
+        }
+    }
+
+    private static void WriteResultToConsole(IDictionary<string, object> result)
+    {
         // Serialize the result back to the output
         var serializer = new JsonSerializer();
-
         var strWriter = new StringWriter();
         var writer = new JsonTextWriter(strWriter)
         {
@@ -107,15 +159,14 @@ public class GrpcCurlApp
         };
         serializer.Serialize(writer, result);
         Console.WriteLine(strWriter.ToString());
-
-        return 0;
     }
 
-    private static IDictionary<string, object>? ParseJson(string data)
+
+    private static object? ParseJson(string data)
     {
         try
         {
-            return (IDictionary<string, object>?)ToApiRequest(JsonConvert.DeserializeObject(data));
+            return ToApiRequest(JsonConvert.DeserializeObject(data));
         }
         catch (Exception ex)
         {
@@ -132,7 +183,6 @@ public class GrpcCurlApp
 
         return result;
     }
-
 
     private static object? ToApiRequest(object? requestObject)
     {
