@@ -83,14 +83,14 @@ internal sealed class DynamicFileDescriptorSet
         return (inputMessageProto.GetMarshaller(context), outputMessageProto.GetMarshaller(context));
     }
 
-    public static async Task<DynamicFileDescriptorSet> FromServerReflection(ChannelBase channel, CancellationToken cancellationToken)
+    public static async Task<DynamicFileDescriptorSet> FromServerReflection(ChannelBase channel, int? timeoutInMillis, CancellationToken cancellationToken)
     {
         // Step 1 - Fetch all services we can interact with
         var client = new ServerReflection.ServerReflectionClient(channel);
         var response = await SingleRequestAsync(client, new ServerReflectionRequest
         {
             ListServices = ""
-        }, cancellationToken);
+        }, timeoutInMillis, cancellationToken);
 
         // Step 2 - Fetch all proto files associated with the service we got.
         // NOTE: The proto files are all transitive, but not correctly ordered!
@@ -101,7 +101,7 @@ internal sealed class DynamicFileDescriptorSet
             var serviceResponse = await SingleRequestAsync(client, new ServerReflectionRequest
             {
                 FileContainingSymbol = service.Name
-            }, cancellationToken);
+            }, timeoutInMillis, cancellationToken);
 
             listOfProtosToLoad.AddRange(serviceResponse.FileDescriptorResponse.FileDescriptorProto.ToList());
         }
@@ -191,9 +191,9 @@ internal sealed class DynamicFileDescriptorSet
         return new DynamicFileDescriptorSet(orderedList.ToArray());
     }
 
-    private static async Task<ServerReflectionResponse> SingleRequestAsync(ServerReflection.ServerReflectionClient client, ServerReflectionRequest request, CancellationToken cancellationToken)
+    private static async Task<ServerReflectionResponse> SingleRequestAsync(ServerReflection.ServerReflectionClient client, ServerReflectionRequest request, int? timeoutInMillis, CancellationToken cancellationToken)
     {
-        using var call = client.ServerReflectionInfo(cancellationToken: cancellationToken);
+        using var call = client.ServerReflectionInfo(deadline: timeoutInMillis is > 0 ? DateTime.Now.ToUniversalTime().AddMilliseconds(timeoutInMillis.Value) : null, cancellationToken: cancellationToken);
         await call.RequestStream.WriteAsync(request);
         var result = await call.ResponseStream.MoveNext();
         if (!result)
