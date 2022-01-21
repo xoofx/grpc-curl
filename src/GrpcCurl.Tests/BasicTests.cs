@@ -18,7 +18,7 @@ namespace GrpcCurl.Tests
         [Ignore("Local only")]
         public async Task TestStarlink()
         {
-            var channel = GrpcChannel.ForAddress("http://192.168.100.1:9200");
+            using var channel = GrpcChannel.ForAddress("http://192.168.100.1:9200");
             var client = await DynamicGrpcClient.FromServerReflection(channel);
 
             var result = await client.AsyncUnaryCall("SpaceX.API.Device.Device", "Handle", new Dictionary<string, object>()
@@ -106,6 +106,7 @@ namespace GrpcCurl.Tests
 
         [TestCase("double", 1.0, 2.0)]
         [TestCase("float", 1.0f, 2.0f)]
+        [TestCase("int32", -1, 0)] // testing default value
         [TestCase("int32", 1, 2)]
         [TestCase("int64", 1L, 2L)]
         [TestCase("uint32", 1U, 2U)]
@@ -120,6 +121,7 @@ namespace GrpcCurl.Tests
         [TestCase("string", "hello", "hello1")]
         [TestCase("bytes", null, null)]
         [TestCase("enum_type", 0, "WEB")]
+        [TestCase("enum_type", -1, "UNIVERSAL")] // testing default value
         [TestCase("enum_type", "IMAGES", "LOCAL")]
         public async Task TestPrimitives(string name, object input, object expectedOutput)
         {
@@ -163,16 +165,9 @@ namespace GrpcCurl.Tests
 
             static void ValidateResult(string name, object expectedOutput, IDictionary<string, object> result)
             {
-                if (name == "bool")
-                {
-                    Assert.IsEmpty(result);
-                }
-                else
-                {
-                    Assert.That(result, Contains.Key("value"));
-                    var output = result["value"];
-                    Assert.AreEqual(expectedOutput, output);
-                }
+                Assert.That(result, Contains.Key("value"));
+                var output = result["value"];
+                Assert.AreEqual(expectedOutput, output);
             }
         }
 
@@ -221,7 +216,6 @@ namespace GrpcCurl.Tests
             Assert.That(subDict, Contains.Value("test10"));
         }
 
-
         [Test]
         public async Task TestAny()
         {
@@ -253,6 +247,34 @@ namespace GrpcCurl.Tests
             Assert.That(subDict, Contains.Key("@type"));
             Assert.AreEqual("From currency: this is a currency", subDict["stock_message"]);
             Assert.AreEqual("type.googleapis.com/Primitives.Stock", subDict["@type"]);
+        }
+
+        [Test]
+        public async Task TestDefaults()
+        {
+            var client = await DynamicGrpcClient.FromServerReflection(TestGrpcChannel);
+
+            var result = await client.AsyncUnaryCall("Primitives.PrimitiveService", $"Request_defaults_type", new Dictionary<string, object>());
+
+            Assert.That(result, Contains.Key("value"));
+            var subValue = result["value"];
+            Assert.IsInstanceOf<IDictionary<string, object>>(subValue);
+            dynamic dict = subValue;
+
+            Assert.AreEqual(0, dict.field_int32);
+            Assert.AreEqual(0L, dict.field_int64);
+            Assert.AreEqual(0U, dict.field_uint32);
+            Assert.AreEqual(0UL, dict.field_uint64);
+            Assert.AreEqual(0, dict.field_sint32);
+            Assert.AreEqual(0L, dict.field_sint64);
+            Assert.AreEqual(0U, dict.field_fixed32);
+            Assert.AreEqual(0UL, dict.field_fixed64);
+            Assert.AreEqual(0, dict.field_sfixed32);
+            Assert.AreEqual(0L, dict.field_sfixed64);
+            Assert.AreEqual(false, dict.field_bool);
+            Assert.AreEqual("", dict.field_string);
+            Assert.AreEqual(Array.Empty<byte>(), dict.field_bytes);
+            Assert.AreEqual("UNIVERSAL", dict.field_enum_type);
         }
     }
 }

@@ -41,6 +41,8 @@ service PrimitiveService {
   rpc Request_with_repeated_enum_type(enum_type_repeated_InOut) returns (enum_type_repeated_InOut);
   rpc Request_any_type(any_type_InOut) returns (any_type_InOut);
   rpc Request_with_repeated_any_type(any_type_repeated_InOut) returns (any_type_repeated_InOut);
+  rpc Request_defaults_type(defaults_type_InOut) returns (defaults_type_InOut);
+  rpc Request_with_repeated_defaults_type(defaults_type_repeated_InOut) returns (defaults_type_repeated_InOut);
 }
 
 message int32_InOut {
@@ -169,6 +171,13 @@ message any_type_InOut {
 message any_type_repeated_InOut {
   repeated any_type values = 1;
 }
+message defaults_type_InOut {
+  defaults_type value = 1;
+}
+
+message defaults_type_repeated_InOut {
+  repeated defaults_type values = 1;
+}
 
 enum enum_type {
 	UNIVERSAL = 0;
@@ -205,4 +214,21 @@ message Currency {
 
 message any_type {
     google.protobuf.Any instrument = 1;
+}
+
+message defaults_type {
+  int32 field_int32 = 1;
+  int64 field_int64 = 2;
+  uint32 field_uint32 = 3;
+  uint64 field_uint64 = 4;
+  sint32 field_sint32 = 5;
+  sint64 field_sint64 = 6;
+  fixed32 field_fixed32 = 7;
+  fixed64 field_fixed64 = 8;
+  sfixed32 field_sfixed32 = 9;
+  sfixed64 field_sfixed64 = 10;
+  bool field_bool = 11;
+  string field_string = 12;
+  bytes field_bytes = 13;
+  enum_type field_enum_type = 14;
 }

@@ -337,6 +337,21 @@ internal sealed class DynamicMessageSerializer
             result.Add(context.UseJsonNaming ? fieldDescriptor.JsonName: fieldDescriptor.Name, value);
         }
 
+        // Add default fields
+        foreach (var fieldDescriptor in Descriptor.Fields.InDeclarationOrder())
+        {
+            var name = context.UseJsonNaming ? fieldDescriptor.JsonName : fieldDescriptor.Name;
+            var defaultValue = DefaultValueHelper.GetDefaultValue(fieldDescriptor.FieldType);
+            if (defaultValue is not null && !result.ContainsKey(name))
+            {
+                if (fieldDescriptor.FieldType == FieldType.Enum && !context.UseNumberedEnums)
+                {
+                    defaultValue = fieldDescriptor.EnumType.FindValueByNumber(0).Name;
+                }
+                result[name] = defaultValue;
+                
+            }
+        }
 
         // Special case for any, we are converting them on the fly
         if (Descriptor.FullName == DynamicAnyExtensions.GoogleTypeAnyFullName)

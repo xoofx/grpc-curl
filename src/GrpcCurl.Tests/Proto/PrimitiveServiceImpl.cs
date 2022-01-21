@@ -228,4 +228,9 @@ public class PrimitiveServiceImpl : PrimitiveService.PrimitiveServiceBase
     {
         throw new NotImplementedException();
     }
+
+    public override Task<defaults_type_InOut> Request_defaults_type(defaults_type_InOut request, ServerCallContext context)
+    {
+        return Task.FromResult(new defaults_type_InOut() { Value = new defaults_type() });
+    }
 }
