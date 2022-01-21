@@ -67,7 +67,7 @@ public class GrpcCurlApp
             options.Service = serviceMethod.Substring(0, indexOfSlash);
             options.Method = serviceMethod.Substring(indexOfSlash + 1);
 
-            return await RunInternal(options);
+            return await Run(options);
         }
         catch (Exception exception)
         {
@@ -85,7 +85,7 @@ public class GrpcCurlApp
         }
     }
 
-    private static async Task<int> RunInternal(GrpcCurlOptions options)
+    public static async Task<int> Run(GrpcCurlOptions options)
     {
         var httpAddress = options.Address.StartsWith("http") ? options.Address : $"http://{options.Address}";
         var channel = GrpcChannel.ForAddress(httpAddress);
@@ -135,7 +135,7 @@ public class GrpcCurlApp
         // Perform the async call
         await foreach (var result in client.AsyncDynamicCall(options.Service, options.Method, ToAsync(input)))
         {
-            WriteResultToConsole(result);
+            OutputResult(options.Writer, result);
         }
         return 0;
     }
@@ -148,7 +148,7 @@ public class GrpcCurlApp
         }
     }
 
-    private static void WriteResultToConsole(IDictionary<string, object> result)
+    private static void OutputResult(TextWriter output, IDictionary<string, object> result)
     {
         // Serialize the result back to the output
         var serializer = new JsonSerializer();
@@ -158,7 +158,7 @@ public class GrpcCurlApp
             Formatting = Formatting.Indented
         };
         serializer.Serialize(writer, result);
-        Console.WriteLine(strWriter.ToString());
+        output.WriteLine(strWriter.ToString());
     }
 
 

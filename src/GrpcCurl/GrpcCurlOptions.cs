@@ -7,6 +7,7 @@ public class GrpcCurlOptions
         Address = string.Empty;
         Service = string.Empty;
         Method = string.Empty;
+        Writer = Console.Out;
     }
 
     public string Address { get; set; }
@@ -20,4 +21,6 @@ public class GrpcCurlOptions
     public object? Data { get; set; }
 
     public bool Verbose { get; set; }
+
+    public TextWriter Writer { get; set; }
 }
