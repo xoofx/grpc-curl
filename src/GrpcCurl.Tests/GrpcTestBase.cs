@@ -32,7 +32,12 @@ public abstract class GrpcTestBase
     [OneTimeTearDown]
     public async Task TearDown()
     {
-        _testGrpcChannel?.Dispose();
+        if (_testGrpcChannel != null)
+        {
+            await _testGrpcChannel.ShutdownAsync();
+            _testGrpcChannel.Dispose();
+        }
+
         if (_app != null)
         {
             await _app.DisposeAsync();

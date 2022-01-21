@@ -202,6 +202,10 @@ internal sealed class DynamicFileDescriptorSet
 
         var response = call.ResponseStream.Current;
         await call.RequestStream.CompleteAsync();
+
+        result = await call.ResponseStream.MoveNext();
+        Debug.Assert(!result);
+
         return response;
     }
 
