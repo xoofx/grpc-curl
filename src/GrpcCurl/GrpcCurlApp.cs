@@ -55,7 +55,7 @@ public class GrpcCurlApp
 
             if (arguments.Count != 2)
             {
-                throw new GrpcCurlException("Expecting a path to a solution file");
+                throw new GrpcCurlException("Expecting arguments");
             }
 
             options.Address = arguments[0];
