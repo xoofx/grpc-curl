@@ -95,8 +95,11 @@ public class GrpcCurlApp
             UseJsonNaming = options.UseJsonNaming
         });
 
-        Debug.Assert(options.Data != null);
-
+        // Parse input from stdin if data was not passed by command line
+        if (options.Data is null || Console.IsInputRedirected)
+        {
+            options.Data = ParseJson(await Console.In.ReadToEndAsync());
+        }
 
         if (!client.TryFindMethod(options.Service, options.Method, out var methodDescriptor))
         {
