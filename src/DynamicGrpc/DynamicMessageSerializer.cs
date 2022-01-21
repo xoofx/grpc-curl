@@ -519,7 +519,9 @@ internal sealed class DynamicMessageSerializer
                 {
                     throw new DynamicGrpcClientException($"Repeated Field `{keyValue.Key}` is expecting an IEnumerable type instead of {keyValue.Value?.GetType()?.FullName}.");
                 }
-                
+
+                // TODO: inefficient copy here to RepeatedField. We should have access to FieldCodec internals
+                // https://github.com/protocolbuffers/protobuf/issues/9432
                 switch (fieldDescriptor.FieldType)
                 {
                     case FieldType.Double:

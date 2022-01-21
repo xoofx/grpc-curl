@@ -105,6 +105,7 @@ internal sealed class DynamicFileDescriptorSet
             listOfProtosToLoad.AddRange(serviceResponse.FileDescriptorResponse.FileDescriptorProto.ToList());
         }
 
+        // Workaround for https://github.com/protocolbuffers/protobuf/issues/9431
         // Step 3 - Order proto files correctly because of 2 problems:
         // 1) as FileContainingSymbol doesn't seem to return proto files in the correct order
         // 2) FileDescriptor.BuildFromByteStrings doesn't support passing files in random order, so we need to reorder them with protos
@@ -138,6 +139,7 @@ internal sealed class DynamicFileDescriptorSet
 
     public static DynamicFileDescriptorSet FromFileDescriptorProtos(IEnumerable<FileDescriptorProto> protos)
     {
+        // Workaround for https://github.com/protocolbuffers/protobuf/issues/9431
         // Step 1 - FileDescriptor.BuildFromByteStrings doesn't support passing files in random order, so we need to reorder them with protos
         // It is very unfortunate, as we are doubling the deserialization of FileDescriptorProto
         var resolved = new HashSet<string>();
@@ -164,6 +166,7 @@ internal sealed class DynamicFileDescriptorSet
 
     public static DynamicFileDescriptorSet FromFileDescriptors(IEnumerable<FileDescriptor> descriptors)
     {
+        // Workaround for https://github.com/protocolbuffers/protobuf/issues/9431
         // Step 1 - FileDescriptor.BuildFromByteStrings doesn't support passing files in random order, so we need to reorder them with protos
         // It is very unfortunate, as we are doubling the deserialization of FileDescriptorProto
         var resolved = new HashSet<string>();
