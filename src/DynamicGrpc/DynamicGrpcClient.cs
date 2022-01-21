@@ -53,11 +53,12 @@ public sealed class DynamicGrpcClient : ClientBase
     /// </summary>
     /// <param name="channel">The gRPC channel to fetch reflection data from.</param>
     /// <param name="options">Options for this client.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A dynamic client gRPC instance.</returns>
-    public static async Task<DynamicGrpcClient> FromServerReflection(ChannelBase channel, DynamicGrpcClientOptions? options = null)
+    public static async Task<DynamicGrpcClient> FromServerReflection(ChannelBase channel, DynamicGrpcClientOptions? options = null, CancellationToken cancellationToken = default)
     {
         options ??= new DynamicGrpcClientOptions();
-        var dynamicDescriptorSet = await DynamicFileDescriptorSet.FromServerReflection(channel);
+        var dynamicDescriptorSet = await DynamicFileDescriptorSet.FromServerReflection(channel, cancellationToken);
         return new DynamicGrpcClient(channel, dynamicDescriptorSet, options);
     }
 

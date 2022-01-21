@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Grpc.Core;
@@ -82,14 +83,14 @@ internal sealed class DynamicFileDescriptorSet
         return (inputMessageProto.GetMarshaller(context), outputMessageProto.GetMarshaller(context));
     }
 
-    public static async Task<DynamicFileDescriptorSet> FromServerReflection(ChannelBase channel)
+    public static async Task<DynamicFileDescriptorSet> FromServerReflection(ChannelBase channel, CancellationToken cancellationToken)
     {
         // Step 1 - Fetch all services we can interact with
         var client = new ServerReflection.ServerReflectionClient(channel);
         var response = await SingleRequestAsync(client, new ServerReflectionRequest
         {
             ListServices = ""
-        });
+        }, cancellationToken);
 
         // Step 2 - Fetch all proto files associated with the service we got.
         // NOTE: The proto files are all transitive, but not correctly ordered!
@@ -100,7 +101,7 @@ internal sealed class DynamicFileDescriptorSet
             var serviceResponse = await SingleRequestAsync(client, new ServerReflectionRequest
             {
                 FileContainingSymbol = service.Name
-            });
+            }, cancellationToken);
 
             listOfProtosToLoad.AddRange(serviceResponse.FileDescriptorResponse.FileDescriptorProto.ToList());
         }
@@ -190,16 +191,15 @@ internal sealed class DynamicFileDescriptorSet
         return new DynamicFileDescriptorSet(orderedList.ToArray());
     }
 
-    private static async Task<ServerReflectionResponse> SingleRequestAsync(ServerReflection.ServerReflectionClient client, ServerReflectionRequest request)
+    private static async Task<ServerReflectionResponse> SingleRequestAsync(ServerReflection.ServerReflectionClient client, ServerReflectionRequest request, CancellationToken cancellationToken)
     {
-        using var call = client.ServerReflectionInfo();
+        using var call = client.ServerReflectionInfo(cancellationToken: cancellationToken);
         await call.RequestStream.WriteAsync(request);
         var result = await call.ResponseStream.MoveNext();
         if (!result)
         {
             throw new InvalidOperationException();
         }
-
         var response = call.ResponseStream.Current;
         await call.RequestStream.CompleteAsync();
 
