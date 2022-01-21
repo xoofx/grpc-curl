@@ -98,16 +98,17 @@ var result = await client.AsyncUnaryCall("SpaceX.API.Device.Device", "Handle", n
 ## Features
 
 - Build on top of the `DynamicGrpc` library available as a separate NuGet package.
-- `DynamicGrpc` supports all the kind of gRPC calls (unary blocking, unary async, streaming, full-duplex...)
-- `grpc-curl` supports only blocking/async method for now (streaming should follow)
+- `DynamicGrpc` supports all the kind of gRPC calls (unary blocking, unary async, streaming, full-duplex...).
+- `grpc-curl` supports only blocking/async method for now (streaming should follow).
 - Support for plain Protocol Buffers naming conventions or JSON.
+- Support for `google.protobuf.Any`: The type has to be encoded - and is decoded with the shadow property `@type` on a dictionary (e.g `@type = "type.googleapis.com/YourTypeName"`).
 
 ## Binaries
 
 If you have dotnet 6.0 installed, you can install this tool via NuGet:
 
 ```
-dotnet tool install --global grpc-curl --version 1.0.0
+dotnet tool install --global grpc-curl --version 1.1.0
 ```
 
 > Debian and macOS packages for x64/am64 will be released later.
