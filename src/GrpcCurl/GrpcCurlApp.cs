@@ -55,7 +55,7 @@ public class GrpcCurlApp
 
             if (arguments.Count != 2)
             {
-                throw new GrpcCurlException("Expecting arguments");
+                throw new GrpcCurlException(arguments.Count == 0 ? "Missing arguments." :  "Invalid number of arguments.");
             }
 
             options.Address = arguments[0];
