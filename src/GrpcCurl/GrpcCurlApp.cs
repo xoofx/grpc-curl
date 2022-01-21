@@ -101,10 +101,16 @@ public class GrpcCurlApp
         });
 
         // Parse input from stdin if data was not passed by command line
-        if (options.Data is null || Console.IsInputRedirected)
+        var data = options.Data;
+        if (data is null)
         {
-            options.Data = ParseJson(await Console.In.ReadToEndAsync());
+            if (Console.IsInputRedirected)
+            {
+                data = ParseJson(await Console.In.ReadToEndAsync());
+            }
         }
+        data ??= new Dictionary<string, object>();
+
 
         if (!client.TryFindMethod(options.Service, options.Method, out var methodDescriptor))
         {
@@ -114,7 +120,7 @@ public class GrpcCurlApp
         // Parse Input
         var input = new List<IDictionary<string, object>>();
 
-        if (options.Data is IEnumerable<object> it)
+        if (data is IEnumerable<object> it)
         {
             int index = 0;
             foreach (var item in it)
@@ -131,13 +137,13 @@ public class GrpcCurlApp
                 index++;
             }
         }
-        else if (options.Data is IDictionary<string, object> dict)
+        else if (data is IDictionary<string, object> dict)
         {
             input.Add(dict);
         }
         else
         {
-            throw new GrpcCurlException($"Invalid type `{options.Data?.GetType()?.FullName}` from the input. Expecting an object.");
+            throw new GrpcCurlException($"Invalid type `{data?.GetType()?.FullName}` from the input. Expecting an object.");
         }
 
         // Perform the async call
