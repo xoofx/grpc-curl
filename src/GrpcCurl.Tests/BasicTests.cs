@@ -220,5 +220,39 @@ namespace GrpcCurl.Tests
             Assert.That(subDict, Contains.Value("test0"));
             Assert.That(subDict, Contains.Value("test10"));
         }
+
+
+        [Test]
+        public async Task TestAny()
+        {
+            var client = await DynamicGrpcClient.FromServerReflection(TestGrpcChannel);
+
+            var result = await client.AsyncUnaryCall("Primitives.PrimitiveService", $"Request_any_type", new Dictionary<string, object>()
+            {
+                { "value", new Dictionary<string, object>()
+                    {
+                        {"instrument", new Dictionary<string, object>()
+                            {
+                                {"currency_message", "this is a currency"} 
+                            }.WithAny("Primitives.Currency")
+                        }
+                    }
+                }
+            });
+
+            Assert.That(result, Contains.Key("value"));
+            var subValue = result["value"];
+            Assert.IsInstanceOf<IDictionary<string, object>>(subValue);
+            var dict = (IDictionary<string, object>)subValue;
+            Assert.That(dict, Contains.Key("instrument"));
+            subValue = dict["instrument"];
+            Assert.IsInstanceOf<IDictionary<string, object>>(subValue);
+            var subDict = (IDictionary<string, object>)subValue;
+            Assert.AreEqual(2, subDict.Count, $"Invalid number of key/values. {string.Join(", ", subDict.Keys)}");
+            Assert.That(subDict, Contains.Key("stock_message"));
+            Assert.That(subDict, Contains.Key("@type"));
+            Assert.AreEqual("From currency: this is a currency", subDict["stock_message"]);
+            Assert.AreEqual("type.googleapis.com/Primitives.Stock", subDict["@type"]);
+        }
     }
 }

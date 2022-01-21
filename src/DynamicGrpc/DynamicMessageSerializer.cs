@@ -337,6 +337,41 @@ internal sealed class DynamicMessageSerializer
             result.Add(context.UseJsonNaming ? fieldDescriptor.JsonName: fieldDescriptor.Name, value);
         }
 
+
+        // Special case for any, we are converting them on the fly
+        if (Descriptor.FullName == "google.protobuf.Any")
+        {
+            // The input type is an any. Expecting the property @type to be part of it
+            if (result.TryGetValue("type_url", out var typeUrlObject) && typeUrlObject is string typeUrl)
+            {
+                var typeName = Google.Protobuf.WellKnownTypes.Any.GetTypeName(typeUrl);
+                if (DescriptorSet.TryFindMessageDescriptorProto(typeName, out var serializer))
+                {
+                    if (!result.TryGetValue("value", out var dataValueObject) || dataValueObject is not byte[] dataValue)
+                    {
+                        throw new DynamicGrpcClientException($"Invalid message value for any type.");
+                    }
+
+                    var newResult = context.Factory();
+                    var stream = new CodedInputStream(dataValue);
+                    var message = new DynamicMessage(serializer, newResult, context);
+                    stream.ReadRawMessage(message);
+                    newResult = message.Value;
+                    newResult["@type"] = typeUrl;
+                    result = newResult;
+                }
+                else
+                {
+                    throw new DynamicGrpcClientException($"Invalid message type name `{typeName}` not found for an Any type.");
+                }
+            }
+            else
+            {
+                throw new DynamicGrpcClientException($"Expecting an any type but the input dictionary doesn't contain a type_url property.");
+            }
+        }
+
+
         return result;
     }
 
@@ -457,6 +492,8 @@ internal sealed class DynamicMessageSerializer
     public void WriteTo(IDictionary<string, object> value, ref WriteContext output, DynamicGrpcClientContext context)
     {
         var nameToField = context.UseJsonNaming ? _jsonNameToField : _nameToField;
+        // Special case for any, we are converting them on the fly
+        value = FilterAny(value, context);
 
         foreach (var keyValue in value)
         {
@@ -767,8 +804,61 @@ internal sealed class DynamicMessageSerializer
         }
     }
 
+
+    private IDictionary<string, object> FilterAny(IDictionary<string, object> value, DynamicGrpcClientContext context)
+    {
+        // Special case for any, we are converting them on the fly
+        if (Descriptor.FullName == "google.protobuf.Any")
+        {
+            if (context.MapToAny.TryGetValue(value, out var any))
+            {
+                return any;
+            }
+
+            // The input type is an any. Expecting the property @type to be part of it
+            if (value.TryGetValue("@type", out var typeUrlObject) && typeUrlObject is string typeUrl)
+            {
+                var typeName = Google.Protobuf.WellKnownTypes.Any.GetTypeName(typeUrl);
+                if (DescriptorSet.TryFindMessageDescriptorProto(typeName, out var serializer))
+                {
+                    var memoryStream = new MemoryStream();
+                    {
+                        var copy = new Dictionary<string, object>(value);
+                        copy.Remove("@type");
+                        var stream = new CodedOutputStream(memoryStream);
+                        var message = new DynamicMessage(serializer, copy, context);
+                        stream.WriteRawMessage(message);
+                        stream.Flush();
+                    }
+                    var byteBuffer = memoryStream.ToArray();
+                    var newValue = new Dictionary<string, object>
+                    {
+                        ["type_url"] = typeUrl,
+                        ["value"] = byteBuffer
+                    };
+                    context.MapToAny[value] = newValue;
+                    value = newValue;
+                }
+                else
+                {
+                    throw new DynamicGrpcClientException($"Invalid message type name `{typeName}` not found for an Any type.");
+                }
+            }
+            else
+            {
+                throw new DynamicGrpcClientException($"Expecting an any type but the input dictionary doesn't contain a @type property.");
+            }
+        }
+        return value;
+    }
+
+
+
     public int ComputeSize(IDictionary<string, object> value, DynamicGrpcClientContext context)
     {
+        // Special case for any, we are converting them on the fly
+        value = FilterAny(value, context);
+        
         int size = 0;
         foreach (var keyValue in value)
         {

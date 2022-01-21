@@ -16,6 +16,7 @@ internal sealed class DynamicGrpcClientContext
         UseNumberedEnums = options.UseNumberedEnums;
         Factory = options.MessageFactory;
         _nextTags = new Queue<uint>();
+        MapToAny = new Dictionary<IDictionary<string, object>, IDictionary<string, object>>(ReferenceEqualityComparer.Instance);
     }
 
     public bool UseJsonNaming { get; set; }
@@ -23,6 +24,8 @@ internal sealed class DynamicGrpcClientContext
     public bool UseNumberedEnums { get; set; }
 
     public Func<IDictionary<string, object>> Factory { get; set; }
+
+    public Dictionary<IDictionary<string, object>, IDictionary<string, object>> MapToAny { get;  }
 
     internal uint ReadTag(ref ParseContext input)
     {

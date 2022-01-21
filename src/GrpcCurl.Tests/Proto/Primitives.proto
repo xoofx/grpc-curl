@@ -1,5 +1,7 @@
 ﻿syntax = "proto3";
 
+import "google/protobuf/any.proto";
+
 package Primitives;
 
 service PrimitiveService {
@@ -37,6 +39,8 @@ service PrimitiveService {
   rpc Request_with_repeated_map_type(map_type_repeated_InOut) returns (map_type_repeated_InOut);
   rpc Request_enum_type(enum_type_InOut) returns (enum_type_InOut);
   rpc Request_with_repeated_enum_type(enum_type_repeated_InOut) returns (enum_type_repeated_InOut);
+  rpc Request_any_type(any_type_InOut) returns (any_type_InOut);
+  rpc Request_with_repeated_any_type(any_type_repeated_InOut) returns (any_type_repeated_InOut);
 }
 
 message int32_InOut {
@@ -158,6 +162,13 @@ message enum_type_InOut {
 message enum_type_repeated_InOut {
   repeated enum_type values = 1;
 }
+message any_type_InOut {
+  any_type value = 1;
+}
+
+message any_type_repeated_InOut {
+  repeated any_type values = 1;
+}
 
 enum enum_type {
 	UNIVERSAL = 0;
@@ -182,4 +193,16 @@ message map_type {
 	map<sfixed64, string> map_key_sfixed64_values = 10;
 	map<bool, string> map_key_bool_values = 11;
 	map<string, string> map_key_string_values = 12;
+}
+
+message Stock {
+	string stock_message = 1;
+}
+
+message Currency {
+	string currency_message = 1;
+}
+
+message any_type {
+    google.protobuf.Any instrument = 1;
 }

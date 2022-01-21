@@ -207,4 +207,25 @@ public class PrimitiveServiceImpl : PrimitiveService.PrimitiveServiceBase
     {
         throw new NotImplementedException();
     }
+
+    public override Task<any_type_InOut> Request_any_type(any_type_InOut request, ServerCallContext context)
+    {
+        if (request.Value.Instrument.Is(Currency.Descriptor))
+        {
+            var message = request.Value.Instrument.Unpack<Currency>().CurrencyMessage;
+            request.Value.Instrument = Google.Protobuf.WellKnownTypes.Any.Pack(new Stock() { StockMessage = $"From currency: {message}" });
+        }
+        else if (request.Value.Instrument.Is(Stock.Descriptor))
+        {
+            var message = request.Value.Instrument.Unpack<Stock>().StockMessage;
+            request.Value.Instrument = Google.Protobuf.WellKnownTypes.Any.Pack(new Currency() { CurrencyMessage = $"From stock: {message}" });
+        }
+
+        return Task.FromResult(request);
+    }
+
+    public override Task<any_type_repeated_InOut> Request_with_repeated_any_type(any_type_repeated_InOut request, ServerCallContext context)
+    {
+        throw new NotImplementedException();
+    }
 }

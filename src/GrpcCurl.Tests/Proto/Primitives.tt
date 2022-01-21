@@ -29,9 +29,12 @@
 		"bytes",
 		"map_type",
 		"enum_type",
+		"any_type",
 	};
 #>
 syntax = "proto3";
+
+import "google/protobuf/any.proto";
 
 package Primitives;
 
@@ -83,4 +86,16 @@ message map_type {
 <#
 	}
 #>
+}
+
+message Stock {
+	string stock_message = 1;
+}
+
+message Currency {
+	string currency_message = 1;
+}
+
+message any_type {
+    google.protobuf.Any instrument = 1;
 }
