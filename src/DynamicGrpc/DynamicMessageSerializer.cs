@@ -483,7 +483,7 @@ internal sealed class DynamicMessageSerializer
     /// <summary>
     /// return true if the field is a repeated packed field, false otherwise.
     /// </summary>
-    private static bool IsRepeatedPacked(FieldDescriptor field)
+    public static bool IsRepeatedPacked(FieldDescriptor field)
     {
         // Workaround as field.IsPacked will throw when GetOptions() is null
         bool isRepeatedPacked = false;

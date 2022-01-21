@@ -43,6 +43,7 @@ public class GrpcCurlApp
             { "d|data=", "Data for string content.", v => options.Data = ParseJson(v) },
             { "http", "Use HTTP instead of HTTPS unless the protocol is specified directly on the address.", v => options.ForceHttp = true },
             { "json", "Use JSON naming for input and output.", v => options.UseJsonNaming = true },
+            { "describe", "Describe the service or dump all services available.", v => options.Describe = true },
             { "v|verbosity:", "Set verbosity.", v => options.Verbose = true },
             { "h|help", "Show this help.", v => showHelp = true },
             _,
@@ -58,19 +59,22 @@ public class GrpcCurlApp
                 return 0;
             }
 
-            if (arguments.Count != 2)
+            if (options.Describe && arguments.Count < 1 && arguments.Count > 2 || !options.Describe && arguments.Count != 2)
             {
                 throw new GrpcCurlException(arguments.Count == 0 ? "Missing arguments." :  "Invalid number of arguments.");
             }
 
             options.Address = arguments[0];
-            var serviceMethod = arguments[1];
+            var serviceMethod = arguments.Count == 2 ? arguments[1] : null;
 
-            var indexOfSlash = serviceMethod.IndexOf('/');
-            if (indexOfSlash < 0) throw new GrpcCurlException("Invalid symbol. The symbol must contain a slash (/) to separate the service from the method (serviceName/methodName)");
+            if (serviceMethod != null)
+            {
+                var indexOfSlash = serviceMethod.IndexOf('/');
+                if (!options.Describe && indexOfSlash < 0) throw new GrpcCurlException("Invalid symbol. The symbol must contain a slash (/) to separate the service from the method (serviceName/methodName)");
 
-            options.Service = serviceMethod.Substring(0, indexOfSlash);
-            options.Method = serviceMethod.Substring(indexOfSlash + 1);
+                options.Service = indexOfSlash < 0 ? serviceMethod : serviceMethod.Substring(0, indexOfSlash);
+                options.Method = indexOfSlash < 0 ? null : serviceMethod.Substring(indexOfSlash + 1);
+            }
 
             return await Run(options);
         }
@@ -99,6 +103,33 @@ public class GrpcCurlApp
         {
             UseJsonNaming = options.UseJsonNaming
         });
+
+        // Describe
+        if (options.Describe)
+        {
+            if (options.Service is null)
+            {
+                foreach (var file in client.Files)
+                {
+                    file.ToProtoString(options.Writer, new DynamicGrpcPrinterOptions() { AddMetaComments = true });
+                    await options.Writer.WriteLineAsync();
+                }
+            }
+            else
+            {
+                foreach (var file in client.Files)
+                {
+                    var service = file.Services.FirstOrDefault(x => x.FullName == options.Service);
+                    if (service is not null)
+                    {
+                        service.ToProtoString(options.Writer, new DynamicGrpcPrinterOptions() { AddMetaComments = true });
+                        await options.Writer.WriteLineAsync();
+                    }
+                }
+            }
+
+            return 0;
+        }
 
         // Parse input from stdin if data was not passed by command line
         var data = options.Data;
