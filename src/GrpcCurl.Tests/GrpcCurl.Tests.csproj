@@ -42,6 +42,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DynamicGrpc\DynamicGrpc.csproj" />
+    <ProjectReference Include="..\GrpcCurl\GrpcCurl.csproj" />
   </ItemGroup>
 
   <ItemGroup>
