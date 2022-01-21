@@ -13,7 +13,7 @@ This tool is the .NET equivalent of the popular [gRPCurl](https://github.com/ful
 `grpc-curl` currently requires that the gRPC server has activated gRPC reflection.
 
 ```powershell
-./grpc-curl --json -d "{""getStatus"":{}}" 192.168.100.1:9200 SpaceX.API.Device.Device/Handle
+./grpc-curl --json -d "{""getStatus"":{}}" http://192.168.100.1:9200 SpaceX.API.Device.Device/Handle
 ```
 Will print the following result:
 
@@ -98,17 +98,16 @@ var result = await client.AsyncUnaryCall("SpaceX.API.Device.Device", "Handle", n
 ## Features
 
 - Build on top of the `DynamicGrpc` library available as a separate NuGet package.
-- `DynamicGrpc` supports all the kind of gRPC calls (unary blocking, unary async, streaming, full-duplex...).
-- `grpc-curl` supports only blocking/async method for now (streaming should follow).
-- Support for plain Protocol Buffers naming conventions or JSON.
-- Support for `google.protobuf.Any`: The type has to be encoded - and is decoded with the shadow property `@type` on a dictionary (e.g `@type = "type.googleapis.com/YourTypeName"`).
+- Supports all gRPC calling modes (unary, client streaming, server streaming, full-duplex).
+- Supports for plain Protocol Buffers naming conventions and JSON.
+- Supports for `google.protobuf.Any`: The type has to be encoded - and is decoded with the shadow property `@type` on a dictionary (e.g `@type = "type.googleapis.com/YourTypeName"`).
 
 ## Binaries
 
 If you have dotnet 6.0 installed, you can install this tool via NuGet:
 
 ```
-dotnet tool install --global grpc-curl --version 1.1.0
+dotnet tool install --global grpc-curl --version 1.2.0
 ```
 
 > Debian and macOS packages for x64/am64 will be released later.
