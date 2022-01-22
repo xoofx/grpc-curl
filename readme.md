@@ -4,13 +4,46 @@
 
 `grpc-curl` is a command line tool for interacting with gRPC servers. 
 
+All the functionalities of `grpc-curl` are also accessible through the NuGet package [DynamicGrpc](https://www.nuget.org/packages/DynamicGrpc/) that is part of this repository.
+
 This tool is the .NET equivalent of the popular [gRPCurl](https://github.com/fullstorydev/grpcurl) written in Golang.
 
 > NOTE: `grpc-curl` doesn't not support yet all the features that `gRPCurl` is providing.
+## Features
 
+- Allows to **invoke method services** for all gRPC calling modes (unary, client streaming, server streaming, full-duplex).
+- Allows to **print proto reflection descriptors** back to **proto language** (via `--describe` with `grpc-curl`, or via the API `.ToProtoString()` with `DynamicGrpc`)
+- Supports for plain Protocol Buffers naming conventions and JSON.
+- Supports for `google.protobuf.Any`: The type has to be encoded - and is decoded with the shadow property `@type` on a dictionary (e.g `@type = "type.googleapis.com/YourTypeName"`).
+- Build on top of the `DynamicGrpc` library available as a separate [NuGet package](https://www.nuget.org/packages/DynamicGrpc/).
+- Build for `net6.0+`
 ## Usage
 
 `grpc-curl` currently requires that the gRPC server has activated gRPC reflection.
+
+```
+Copyright (C) 2022 Alexandre Mutel. All Rights Reserved
+grpc-curl - Version: 1.3.0
+
+Usage: grpc-curl [options] address service/method
+
+  address: A http/https URL or a simple host:address.
+           If only host:address is used, HTTPS is used by default
+           unless the options --http is passed.
+
+## Options
+
+  -d, --data=VALUE           Data for string content.
+      --http                 Use HTTP instead of HTTPS unless the protocol is
+                               specified directly on the address.
+      --json                 Use JSON naming for input and output.
+      --describe             Describe the service or dump all services
+                               available.
+  -v, --verbosity[=VALUE]    Set verbosity.
+  -h, --help                 Show this help.
+```
+
+### Query a service
 
 ```powershell
 ./grpc-curl --json -d "{""getStatus"":{}}" http://192.168.100.1:9200 SpaceX.API.Device.Device/Handle
@@ -79,9 +112,59 @@ Will print the following result:
   }
 }
 ```
+
+### Describe a service
+
+```powershell
+./grpc-curl --describe http://192.168.100.1:9200 SpaceX.API.Device.Device
+```
+Will print:
+
+```proto
+// SpaceX.API.Device.Device is a service:
+service Device {
+  rpc Stream ( .SpaceX.API.Device.ToDevice ) returns ( .SpaceX.API.Device.FromDevice );
+  rpc Handle ( .SpaceX.API.Device.Request ) returns ( .SpaceX.API.Device.Response );
+}
+```
+
+### Describe all proto files serviced via reflection
+
+```powershell
+./grpc-curl --describe http://192.168.100.1:9200
+```
+Will print:
+
+```proto
+// spacex/api/common/status/status.proto is a proto file.
+syntax = "proto3";
+
+package SpaceX.API.Status;
+
+// SpaceX.API.Status.Status is a message:
+message Status {
+  int32 code = 1;
+  string message = 2;
+}
+
+
+// spacex/api/device/command.proto is a proto file.
+syntax = "proto3";
+
+package SpaceX.API.Device;
+
+// SpaceX.API.Device.PublicKey is a message:
+message PublicKey {
+  string key = 1;
+  repeated Capability capabilities = 2;
+}
+
+// ....... and more prints ........
+```
+
 ## Usage API
 
-The functionality of `grpc-curl` is also accessible through the NuGet package [DynamicGrpc](https://www.nuget.org/packages/DynamicGrpc/).
+All the functionalities of `grpc-curl` are also accessible through the NuGet package [DynamicGrpc](https://www.nuget.org/packages/DynamicGrpc/).
 
 ```c#
 var channel = GrpcChannel.ForAddress("http://192.168.100.1:9200");
@@ -93,15 +176,11 @@ var result = await client.AsyncUnaryCall("SpaceX.API.Device.Device", "Handle", n
 {
     { "get_status", new Dictionary<string, object>() }
 });
+
+// Print a proto descriptor
+FileDescriptor descriptor = client.Files[0];
+Console.WriteLine(descriptor.ToProtoString());
 ```
-
-## Features
-
-- Build on top of the `DynamicGrpc` library available as a separate NuGet package.
-- Supports all gRPC calling modes (unary, client streaming, server streaming, full-duplex).
-- Supports for plain Protocol Buffers naming conventions and JSON.
-- Supports for `google.protobuf.Any`: The type has to be encoded - and is decoded with the shadow property `@type` on a dictionary (e.g `@type = "type.googleapis.com/YourTypeName"`).
-
 ## Binaries
 
 If you have dotnet 6.0 installed, you can install this tool via NuGet:

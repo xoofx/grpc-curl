@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0 (22 Jan 2022)
+- Add support for pretty printing all services and messages supported by a server with reflection (`--describe` with `grpc-curl`).
+- Add support for pretty printing proto descriptor back to proto language (`ToProtoString()` API with `DynamicGrpc`)
+
 ## 1.2.0 (21 Jan 2022)
 - Add support for all calling modes (unary, client streaming, server streaming and full-duplex)
 - Add cancellation token when fetching reflection from server.
@@ -9,6 +13,7 @@
 
 ## 1.1.0 (21 Jan 2022)
 - Add support for any
+
 ## 1.0.0 (20 Jan 2022)
 
 - Initial version
