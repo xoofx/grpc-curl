@@ -279,7 +279,7 @@ public static class DynamicGrpcPrinter
                 // ctype
                 if (fieldOptions.HasCtype) fieldOptionList.Add($"ctype = {GetEnumName(fieldOptions.Ctype)}");
                 // packed
-                if (fieldOptions.HasPacked) fieldOptionList.Add($"packed = {options.MessageSetWireFormat.Bool()}");
+                if (fieldOptions.HasPacked) fieldOptionList.Add($"packed = {fieldOptions.Packed.Bool()}");
                 // jstype
                 if (fieldOptions.HasJstype) fieldOptionList.Add($"jstype = {GetEnumName(fieldOptions.Jstype)}");
                 // lazy
