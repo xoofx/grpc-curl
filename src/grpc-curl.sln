@@ -11,6 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrpcCurl.Tests", "GrpcCurl.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D6EF29F0-F4FB-4CE1-A930-512B34C6D3B1}"
 	ProjectSection(SolutionItems) = preProject
+		app-releaser.toml = app-releaser.toml
 		..\changelog.md = ..\changelog.md
 		..\.github\workflows\ci.yml = ..\.github\workflows\ci.yml
 		common.props = common.props

@@ -13,7 +13,7 @@ repo = "grpc-curl"
 # publish = false
 [changelog]
 path = "../changelog.md"
-# version = '^##\s+\d+\.\d+'
+# version = '^##\s+v?((\d+\.)*(\d+))'
 # publish = false
 # [nuget]
 # publish = false
@@ -36,12 +36,12 @@ kinds = ["zip"]
 
 [[pack]]
 rid = ["linux-x64", "linux-arm", "linux-arm64"]
-kinds = ["deb"] # , "brew"
+kinds = ["deb", "tar"]
 
 [[pack]]
 rid = "rhel-x64"
-kinds = ["rpm"]
+kinds = ["rpm", "tar"]
 
 [[pack]]
 rid = ["osx-x64", "osx-arm64"]
-kinds = ["tar"] # , "brew"
+kinds = ["tar"]
