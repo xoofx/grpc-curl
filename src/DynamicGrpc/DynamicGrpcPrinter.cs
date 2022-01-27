@@ -375,8 +375,10 @@ public static class DynamicGrpcPrinter
         // java_multiple_files
         if (options.HasJavaMultipleFiles) context.WriteLine($"option java_multiple_files = {options.JavaMultipleFiles.Bool()};");
         // java_generate_equals_and_hash
+#pragma warning disable CS0612 // Type or member is obsolete
         if (options.HasJavaGenerateEqualsAndHash) context.WriteLine($"option java_generate_equals_and_hash = {options.JavaGenerateEqualsAndHash.Bool()};");
-        // java_string_check_utf8
+#pragma warning restore CS0612 // Type or member is obsolete
+                              // java_string_check_utf8
         if (options.HasJavaStringCheckUtf8) context.WriteLine($"option java_string_check_utf8 = {options.JavaStringCheckUtf8.Bool()};");
         // optimize_for
         if (options.HasOptimizeFor) context.WriteLine($"option optimize_for = {GetEnumName(options.OptimizeFor)};");

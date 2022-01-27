@@ -143,7 +143,9 @@ public class GrpcCurlApp
         data ??= new Dictionary<string, object>();
 
 
-        if (!client.TryFindMethod(options.Service, options.Method, out var methodDescriptor))
+        Debug.Assert(options.Service is not null);
+        Debug.Assert(options.Method is not null);
+        if (!client.TryFindMethod(options.Service!, options.Method!, out var methodDescriptor))
         {
             throw new GrpcCurlException($"Unable to find the method `{options.Service}/{options.Method}`");
         }
