@@ -1,0 +1,47 @@
+# ---------------------------------------------------
+# Global properties for publishing an app
+# ---------------------------------------------------
+# [general]
+# description = "" # By default using the description of the package from the msbuild-project
+# home = "https://github.com/xoofx/grpc-curl" # By default computed from github config below
+[msbuild]
+project = "./GrpcCurl/GrpcCurl.csproj"
+# configuration = "Release"
+[github]
+user = "xoofx"
+repo = "grpc-curl"
+# publish = false
+[changelog]
+path = "../changelog.md"
+# version = '^##\s+\d+\.\d+'
+# publish = false
+# [nuget]
+# publish = false
+# source = "https://api.nuget.org/v3/index.json"
+# [brew]
+# publish = false
+# ---------------------------------------------------
+# List the target platforms and kind of packages.
+# ---------------------------------------------------
+# kind:
+#  - zip: zip archive
+#  - setup: setup installer (win-x64 only)
+#  - deb: debian archive
+#  - rpm: rpm archive
+#  - tar: tar.gz archive
+#  - brew: brew formula
+[[pack]]
+rid = "win-x64"
+kinds = ["zip"]
+
+[[pack]]
+rid = ["linux-x64", "linux-arm", "linux-arm64"]
+kinds = ["deb"] # , "brew"
+
+[[pack]]
+rid = "rhel-x64"
+kinds = ["rpm"]
+
+[[pack]]
+rid = ["osx-x64", "osx-arm64"]
+kinds = ["tar"] # , "brew"
