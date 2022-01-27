@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text;
 using Google.Protobuf.Reflection;
 using FileOptions = Google.Protobuf.Reflection.FileOptions;
@@ -106,12 +107,12 @@ public static class DynamicGrpcPrinter
         return writer.ToString();
     }
 
-    private static string GetEnumName(Enum enumValue)
+    
+    private static string GetEnumName(Enum enumValue, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] Type enumType)
     {
-        var enumType = enumValue.GetType();
         foreach (var field in enumType.GetFields(BindingFlags.Static | BindingFlags.Public))
         {
-            if (field.GetValue(null) == enumValue)
+            if (enumValue.Equals(field.GetValue(null)))
             {
                 var originalNameAttribute = field.GetCustomAttribute<OriginalNameAttribute>();
                 if (originalNameAttribute != null)
@@ -277,11 +278,11 @@ public static class DynamicGrpcPrinter
                 var fieldOptionList = new List<string>();
 
                 // ctype
-                if (fieldOptions.HasCtype) fieldOptionList.Add($"ctype = {GetEnumName(fieldOptions.Ctype)}");
+                if (fieldOptions.HasCtype) fieldOptionList.Add($"ctype = {GetEnumName(fieldOptions.Ctype, typeof(FieldOptions.Types.CType))}");
                 // packed
                 if (fieldOptions.HasPacked) fieldOptionList.Add($"packed = {fieldOptions.Packed.Bool()}");
                 // jstype
-                if (fieldOptions.HasJstype) fieldOptionList.Add($"jstype = {GetEnumName(fieldOptions.Jstype)}");
+                if (fieldOptions.HasJstype) fieldOptionList.Add($"jstype = {GetEnumName(fieldOptions.Jstype, typeof(FieldOptions.Types.JSType))}");
                 // lazy
                 if (fieldOptions.HasLazy) fieldOptionList.Add($"lazy = {fieldOptions.Lazy.Bool()}");
                 // deprecated
@@ -381,7 +382,7 @@ public static class DynamicGrpcPrinter
                               // java_string_check_utf8
         if (options.HasJavaStringCheckUtf8) context.WriteLine($"option java_string_check_utf8 = {options.JavaStringCheckUtf8.Bool()};");
         // optimize_for
-        if (options.HasOptimizeFor) context.WriteLine($"option optimize_for = {GetEnumName(options.OptimizeFor)};");
+        if (options.HasOptimizeFor) context.WriteLine($"option optimize_for = {GetEnumName(options.OptimizeFor, typeof(FileOptions.Types.OptimizeMode))};");
         // go_package
         if (options.HasJavaMultipleFiles) context.WriteLine($"option go_package = {options.JavaMultipleFiles.Bool()};");
         // cc_generic_services
