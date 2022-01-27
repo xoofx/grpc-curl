@@ -15,7 +15,6 @@
   <ItemGroup>
     <PackageReference Include="Grpc.Net.Client" Version="2.41.0" />
     <PackageReference Include="Mono.Options" Version="6.12.0.148" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 
     <PackageReference Include="Packaging.Targets" Version="0.1.189">
       <PrivateAssets>all</PrivateAssets>
@@ -26,6 +25,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DynamicGrpc\DynamicGrpc.csproj" />
+    <TrimmableAssembly Include="Mono.Options" />
+    <TrimmableAssembly Include="Google.Protobuf" />
   </ItemGroup>
 
 </Project>

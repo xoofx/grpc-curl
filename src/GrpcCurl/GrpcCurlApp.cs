@@ -1,12 +1,14 @@
-﻿using System.Diagnostics;
+﻿using System.Collections;
+using System.Diagnostics;
 using System.Reflection;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using DynamicGrpc;
-using Grpc.Core;
 using Grpc.Net.Client;
 using Mono.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
 namespace GrpcCurl;
 
 public class GrpcCurlApp
@@ -198,14 +200,21 @@ public class GrpcCurlApp
     private static void OutputResult(TextWriter output, IDictionary<string, object> result)
     {
         // Serialize the result back to the output
-        var serializer = new JsonSerializer();
-        var strWriter = new StringWriter();
-        var writer = new JsonTextWriter(strWriter)
+        var json = ToJson(result)!;
+        var stream = new MemoryStream();
+        var utf8Writer = new Utf8JsonWriter(stream, new JsonWriterOptions()
         {
-            Formatting = Formatting.Indented
-        };
-        serializer.Serialize(writer, result);
-        output.WriteLine(strWriter.ToString());
+            SkipValidation = true,
+            Indented = true
+        });
+        json.WriteTo(utf8Writer, new JsonSerializerOptions()
+        {
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            WriteIndented = true
+        });
+        utf8Writer.Flush();
+        var jsonString = Encoding.UTF8.GetString(stream.ToArray());
+        output.WriteLine(jsonString);
     }
 
 
@@ -213,7 +222,8 @@ public class GrpcCurlApp
     {
         try
         {
-            return ToApiRequest(JsonConvert.DeserializeObject(data));
+            var json = JsonNode.Parse(data);
+            return ToApiRequest(json);
         }
         catch (Exception ex)
         {
@@ -231,20 +241,57 @@ public class GrpcCurlApp
         return result;
     }
 
-    private static object? ToApiRequest(object? requestObject)
+    private static object? ToApiRequest(JsonNode? requestObject)
     {
         switch (requestObject)
         {
-            case JObject jObject: // objects become Dictionary<string,object>
-                return ((IEnumerable<KeyValuePair<string, JToken>>)jObject).ToDictionary(j => j.Key, j => ToApiRequest(j.Value));
-            case JArray jArray: // arrays become List<object>
+            case JsonObject jObject: // objects become Dictionary<string,object>
+                return jObject.ToDictionary(j => j.Key, j => ToApiRequest(j.Value));
+            case JsonArray jArray: // arrays become List<object>
                 return jArray.Select(ToApiRequest).ToList();
-            case JValue jValue: // values just become the value
-                return jValue.Value;
+            case JsonValue jValue: // values just become the value
+                return jValue.GetValue<object>();
             case null:
                 return null;
             default: // don't know what to do here
                 throw new Exception($"Unsupported type: {requestObject.GetType()}");
+        }
+    }
+
+    private static JsonNode? ToJson(object? requestObject)
+    {
+        switch (requestObject)
+        {
+            case int i32: return JsonValue.Create(i32);
+            case uint u32: return JsonValue.Create(u32);
+            case long i64: return JsonValue.Create(i64);
+            case ulong u64: return JsonValue.Create(u64);
+            case float f32: return JsonValue.Create(f32);
+            case double f64: return JsonValue.Create(f64);
+            case short i16: return JsonValue.Create(i16);
+            case ushort u16: return JsonValue.Create(u16);
+            case sbyte i8: return JsonValue.Create(i8);
+            case byte u8: return JsonValue.Create(u8);
+            case bool b: return JsonValue.Create(b);
+            case string str:
+                return JsonValue.Create(str);
+            case IDictionary<string, object> obj: // objects become Dictionary<string,object>
+                var jsonObject = new JsonObject();
+                foreach (var kp in obj)
+                {
+                    jsonObject.Add(kp.Key, ToJson(kp.Value));
+                }
+                return jsonObject;
+            case IEnumerable array: // arrays become List<object>
+                var jsonArray = new JsonArray();
+                foreach (var o in array)
+                {
+                    jsonArray.Add(ToJson(o));
+                }
+
+                return jsonArray;
+            default: // don't know what to do here
+                return null;
         }
     }
 
