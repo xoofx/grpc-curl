@@ -13,7 +13,7 @@ public class GrpcCurlApp
 {
     public static async Task<int> Run(string[] args)
     {
-        var exeName = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly()?.Location)?.ToLowerInvariant();
+        var exeName = "grpc-curl";
         bool showHelp = false;
 
         var assemblyInfoVersion = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
