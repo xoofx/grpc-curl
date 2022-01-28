@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1 (27 Jan 2022)
+- Fix message fields having packed attribute
+- Fix warnings with trimming
+- Prepare application for self-contained app and trimming
+
 ## 1.3.0 (22 Jan 2022)
 - Add support for pretty printing all services and messages supported by a server with reflection (`--describe` with `grpc-curl`).
 - Add support for pretty printing proto descriptor back to proto language (`ToProtoString()` API with `DynamicGrpc`)

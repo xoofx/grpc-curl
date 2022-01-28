@@ -15,8 +15,8 @@ repo = "grpc-curl"
 path = "../changelog.md"
 # version = '^##\s+v?((\d+\.)*(\d+))'
 # publish = false
-# [nuget]
-# publish = false
+[nuget]
+publish = false
 # source = "https://api.nuget.org/v3/index.json"
 # [brew]
 # publish = false
@@ -30,18 +30,18 @@ path = "../changelog.md"
 #  - rpm: rpm archive
 #  - tar: tar.gz archive
 #  - brew: brew formula
-[[pack]]
-rid = "win-x64"
-kinds = ["zip"]
-
-[[pack]]
-rid = ["linux-x64", "linux-arm", "linux-arm64"]
-kinds = ["deb", "tar"]
-
-[[pack]]
-rid = "rhel-x64"
-kinds = ["rpm", "tar"]
-
-[[pack]]
-rid = ["osx-x64", "osx-arm64"]
-kinds = ["tar"]
+# [[pack]]
+# rid = "win-x64"
+# kinds = ["zip"]
+# 
+# [[pack]]
+# rid = ["linux-x64", "linux-arm", "linux-arm64"]
+# kinds = ["deb", "tar"]
+# 
+# [[pack]]
+# rid = "rhel-x64"
+# kinds = ["rpm", "tar"]
+# 
+# [[pack]]
+# rid = ["osx-x64", "osx-arm64"]
+# kinds = ["tar"]
