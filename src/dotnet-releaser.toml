@@ -6,3 +6,5 @@ properties.PublishReadyToRunComposite = true
 [github]
 user = "xoofx"
 repo = "grpc-curl"
+[changelog]
+path = "../changelog.md"
