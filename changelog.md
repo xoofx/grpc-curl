@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.2 (29 Jan 2022)
+- Use dotnet-releaser for releasing binaries
+
 ## 1.3.1 (27 Jan 2022)
 - Fix message fields having packed attribute
 - Fix warnings with trimming
