@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.4 (30 Jan 2022)
+- Fix exception with RequiredAttribute constructor not found
+
 ## 1.3.3 (30 Jan 2022)
 - Use CommandLineUtils to parse command line args
 - Add source link for DynamicGrpc library
