@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.3 (30 Jan 2022)
+- Use CommandLineUtils to parse command line args
+- Add source link for DynamicGrpc library
+
 ## 1.3.2 (29 Jan 2022)
 - Use dotnet-releaser for releasing binaries
 

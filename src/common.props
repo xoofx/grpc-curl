@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <VersionPrefix>1.3.2</VersionPrefix>
+    <VersionPrefix>1.3.3</VersionPrefix>
     <Copyright>Alexandre Mutel</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Authors>Alexandre Mutel</Authors>
@@ -17,5 +17,4 @@
     <None Include="$(MSBuildThisFileDirectory)../img/grpc-curl.png" Pack="true" PackagePath="/" />
     <None Include="$(MSBuildThisFileDirectory)../readme.md" Pack="true" PackagePath="/"/>
   </ItemGroup>
-
 </Project>
