@@ -26,7 +26,6 @@
   <ItemGroup>
     <ProjectReference Include="..\DynamicGrpc\DynamicGrpc.csproj" />
     <TrimmableAssembly Include="Google.Protobuf" />
-    <TrimmableAssembly Include="McMaster.Extensions.CommandLineUtils" />
   </ItemGroup>
 
 </Project>
