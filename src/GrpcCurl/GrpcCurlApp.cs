@@ -5,10 +5,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using DynamicGrpc;
 using Grpc.Net.Client;
-using Mono.Options;
+using McMaster.Extensions.CommandLineUtils;
 namespace GrpcCurl;
 
 public class GrpcCurlApp
@@ -16,58 +15,34 @@ public class GrpcCurlApp
     public static async Task<int> Run(string[] args)
     {
         var exeName = "grpc-curl";
-        bool showHelp = false;
+        var version = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? typeof(Program).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "?.?.?";
 
-        var assemblyInfoVersion = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-        var version = assemblyInfoVersion?.InformationalVersion;
-        if (version is null)
+        var app = new CommandLineApplication
         {
-            var asmVersion = typeof(Program).Assembly.GetName().Version ?? new Version();
-            version = $"{asmVersion.Major}.{asmVersion.Minor}.{asmVersion.Build}";
-        }
+            Name = exeName,
+        };
 
         var options = new GrpcCurlOptions();
 
-        var _ = string.Empty;
-        var optionSet = new OptionSet
+        app.VersionOption("--version", $"{app.Name} {version} - {DateTime.Now.Year} (c) Copyright Alexandre Mutel", version);
+        app.HelpOption(inherited: true);
+
+        var addressArgument = app.Argument("address:port", @"A http/https URL or a simple host:address. If only host:address is used, HTTPS is used by default unless the options --http is passed.").IsRequired();
+        var serviceArgument = app.Argument("service/method", @"The service/method that will be called.");
+
+        var dataOption = app.Option<string>("-d|--data <json_string>", "JSON string to send as a message.", CommandOptionType.SingleValue);
+        var httpOption = app.Option<bool>("--http", "Use HTTP instead of HTTPS unless the protocol is specified directly on the address.", CommandOptionType.NoValue);
+        var jsonOption = app.Option<bool>("--json", "Use JSON naming for input and output.", CommandOptionType.NoValue);
+        var describeOption = app.Option<bool>("--describe", "Describe the service or dump all services available.", CommandOptionType.NoValue);
+
+        app.OnExecuteAsync(async (token) =>
         {
-            $"Copyright (C) {DateTime.Now.Year} Alexandre Mutel. All Rights Reserved",
-            $"{exeName} - Version: {version}",
-            _,
-            $"Usage: {exeName} [options] address service/method",
-            _,
-            $"  address: A http/https URL or a simple host:address.",
-            $"           If only host:address is used, HTTPS is used by default",
-            $"           unless the options --http is passed.",
-            _,
-            "## Options",
-            _,
-            { "d|data=", "Data for string content.", v => options.Data = ParseJson(v) },
-            { "http", "Use HTTP instead of HTTPS unless the protocol is specified directly on the address.", v => options.ForceHttp = true },
-            { "json", "Use JSON naming for input and output.", v => options.UseJsonNaming = true },
-            { "describe", "Describe the service or dump all services available.", v => options.Describe = true },
-            { "v|verbosity:", "Set verbosity.", v => options.Verbose = true },
-            { "h|help", "Show this help.", v => showHelp = true },
-            _,
-        };
-
-        try
-        {
-            var arguments = optionSet.Parse(args);
-
-            if (showHelp)
-            {
-                optionSet.WriteOptionDescriptions(Console.Error);
-                return 0;
-            }
-
-            if (options.Describe && arguments.Count < 1 && arguments.Count > 2 || !options.Describe && arguments.Count != 2)
-            {
-                throw new GrpcCurlException(arguments.Count == 0 ? "Missing arguments." :  "Invalid number of arguments.");
-            }
-
-            options.Address = arguments[0];
-            var serviceMethod = arguments.Count == 2 ? arguments[1] : null;
+            options.Address = addressArgument.Value!;
+            options.Data = ParseJson(dataOption.ParsedValue);
+            options.ForceHttp = httpOption.ParsedValue;
+            options.UseJsonNaming = jsonOption.ParsedValue;
+            options.Describe = describeOption.ParsedValue;
+            var serviceMethod = serviceArgument.Value;
 
             if (serviceMethod != null)
             {
@@ -79,21 +54,31 @@ public class GrpcCurlApp
             }
 
             return await Run(options);
+        });
+
+        int result = 0;
+        try
+        {
+            result = await app.ExecuteAsync(args);
         }
         catch (Exception exception)
         {
-            var backColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Error.WriteLine(exception.Message);
-            Console.ForegroundColor = backColor;
-            if (exception is GrpcCurlException rocketException && rocketException.AdditionalText != null)
-            {
-                Console.Error.WriteLine(rocketException.AdditionalText);
-            }
-
-            Console.Error.WriteLine("See --help for usage");
-            return 1;
+            string text = (exception is UnrecognizedCommandParsingException unrecognizedCommandParsingException)
+                ? $"{unrecognizedCommandParsingException.Message} for command {unrecognizedCommandParsingException.Command.Name}"
+                : $"Unexpected error {exception}";
+            await WriteLineError(text);
+            result = 1;
         }
+
+        return result;
+    }
+
+    private static async Task WriteLineError(string text)
+    {
+        var backColor = Console.ForegroundColor;
+        Console.ForegroundColor = ConsoleColor.Red;
+        await Console.Out.WriteLineAsync(text);
+        Console.ForegroundColor = backColor;
     }
 
     public static async Task<int> Run(GrpcCurlOptions options)
@@ -229,16 +214,6 @@ public class GrpcCurlApp
         {
             throw new GrpcCurlException($"Failing to deserialize JSON data. Reason: {ex.Message}.");
         }
-    }
-
-    private static TEnum TryParseEnum<TEnum>(string value, string optionName) where TEnum : struct
-    {
-        if (!Enum.TryParse<TEnum>(value, true, out var result))
-        {
-            throw new OptionException($"Invalid value `{value}` for option `{optionName}`. Valid values are: {string.Join(", ", Enum.GetNames(typeof(TEnum)).Select(x => x.ToLowerInvariant()))}", optionName);
-        }
-
-        return result;
     }
 
     private static object? ToApiRequest(JsonNode? requestObject)
