@@ -13,6 +13,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ResolvedFileToPublish Include="..\..\readme.md">
+      <RelativePath>readme.md</RelativePath>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </ResolvedFileToPublish>
+
+    <ResolvedFileToPublish Include="..\..\license.txt">
+      <RelativePath>license.txt</RelativePath>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </ResolvedFileToPublish>
+
     <PackageReference Include="Grpc.Net.Client" Version="2.41.0" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.0" />
 
