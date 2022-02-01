@@ -16,13 +16,6 @@ public class GrpcCurlApp
     public static async Task<int> Run(string[] args)
     {
         var exeName = "grpc-curl";
-        // Workaround for CommandLineUtils with trimming
-        // Force RequiredAttribute ctor to be kept around
-        if (new RequiredAttribute().GetHashCode() > 0)
-        {
-            exeName += "";
-        }
-
         var version = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? typeof(Program).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "?.?.?";
 
         var app = new CommandLineApplication

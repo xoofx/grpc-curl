@@ -23,14 +23,8 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </ResolvedFileToPublish>
 
-    <PackageReference Include="Grpc.Net.Client" Version="2.41.0" />
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.0" />
-
-    <PackageReference Include="Packaging.Targets" Version="0.1.189">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile;build</IncludeAssets>
-      <ExcludeAssets>runtime;contentFiles;native</ExcludeAssets>
-    </PackageReference>
+    <PackageReference Include="Grpc.Net.Client" Version="2.42.0" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.1" />
   </ItemGroup>
 
   <ItemGroup>
