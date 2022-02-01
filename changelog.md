@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.5 (1 Feb 2022)
+- Update to latest CommandLineUtils to fix issue with RequiredAttribute
+- Bump to update formula with latest dotnet-releaser
+
 ## 1.3.4 (30 Jan 2022)
 - Fix exception with RequiredAttribute constructor not found
 
