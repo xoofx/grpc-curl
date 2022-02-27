@@ -1,10 +1,8 @@
 # config for dotnet-releaser
 [msbuild]
-project = "./GrpcCurl/GrpcCurl.csproj"
+project = "grpc-curl.sln"
 # Make the tool faster by compiling all references together
 properties.PublishReadyToRunComposite = true
 [github]
 user = "xoofx"
 repo = "grpc-curl"
-[changelog]
-path = "../changelog.md"
