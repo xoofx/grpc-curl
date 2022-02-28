@@ -27,4 +27,4 @@ jobs:
     - name: Publish
       run: |
         dotnet tool install --global dotnet-releaser
-        dotnet-releaser run --nuget-token "${{secrets.NUGET_TOKEN}}" --github-token "${{secrets.GITHUB_TOKEN}}" --github-token-extra "${{secrets.TOKEN_GITHUB}}" src/dotnet-releaser.toml
+        dotnet-releaser run --nuget-token "${{secrets.NUGET_TOKEN != '' && secrets.NUGET_TOKEN || 'no_token'}}" --github-token "${{secrets.GITHUB_TOKEN}}" --github-token-extra "${{secrets.TOKEN_GITHUB != '' && secrets.TOKEN_GITHUB || 'no_token'}}" src/dotnet-releaser.toml
