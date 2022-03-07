@@ -1,5 +1,7 @@
 # Changelog
 
+> This changelog is no longer used for newer version. Please visits https://github.com/xoofx/grpc-curl/releases
+
 ## 1.3.5 (1 Feb 2022)
 - Update to latest CommandLineUtils to fix issue with RequiredAttribute
 - Bump to update formula with latest dotnet-releaser
