@@ -17,13 +17,15 @@ This tool is the .NET equivalent of the popular [gRPCurl](https://github.com/ful
 - Supports for `google.protobuf.Any`: The type has to be encoded - and is decoded with the shadow property `@type` on a dictionary (e.g `@type = "type.googleapis.com/YourTypeName"`).
 - Build on top of the `DynamicGrpc` library available as a separate [NuGet package](https://www.nuget.org/packages/DynamicGrpc/).
 - Build for `net6.0+`
+- Available for multiple platforms. See binaries section below.
+
 ## Usage
 
 `grpc-curl` currently requires that the gRPC server has activated gRPC reflection.
 
 ```
 Copyright (C) 2022 Alexandre Mutel. All Rights Reserved
-grpc-curl - Version: 1.3.0
+grpc-curl - Version: 1.3.6
 
 Usage: grpc-curl [options] address service/method
 
@@ -183,13 +185,31 @@ Console.WriteLine(descriptor.ToProtoString());
 ```
 ## Binaries
 
+`grpc-curl` is available on multiple platforms:
+
+
+| Platform                                | Packages         |
+|-----------------------------------------|------------------|
+| `win-x64`, `win-arm`, `win-arm64`       | `zip`
+| `linux-x64`, `linux-arm`, `linux-arm64` | `deb`, `tar`
+| `rhel-x64`                              | `rpm`, `tar`
+| `osx-x64`, `osx-arm64`                  | `tar`
+
+
 If you have dotnet 6.0 installed, you can install this tool via NuGet:
 
 ```
-dotnet tool install --global grpc-curl --version 1.2.0
+dotnet tool install --global grpc-curl
 ```
 
-> Debian and macOS packages for x64/am64 will be released later.
+Otherwise, you can install native binaries to Windows, Linux, and macOS with the various debian/rpm/zip packages available directly from the [releases](https://github.com/xoofx/grpc-curl/releases).
+
+grpc-curl is also available via homebrew for macOS and Linux:
+
+```
+$ brew tap xoofx/grpc-curl
+$ brew install grpc-curl
+```
 
 ## License
 
