@@ -266,6 +266,8 @@ public class GrpcCurlApp
                 }
 
                 return jsonArray;
+            case KeyValuePair<object, object> pair:
+                return JsonValue.Create(pair);
             default: // don't know what to do here
                 return null;
         }
