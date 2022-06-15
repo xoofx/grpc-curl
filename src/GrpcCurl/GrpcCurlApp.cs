@@ -78,7 +78,7 @@ public class GrpcCurlApp
     {
         var backColor = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Red;
-        await Console.Out.WriteLineAsync(text);
+        await Console.Error.WriteLineAsync(text);
         Console.ForegroundColor = backColor;
     }
 
