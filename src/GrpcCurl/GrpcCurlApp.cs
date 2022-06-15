@@ -39,10 +39,11 @@ public class GrpcCurlApp
         app.OnExecuteAsync(async (token) =>
         {
             options.Address = addressArgument.Value!;
-            options.Data = ParseJson(dataOption.ParsedValue);
             options.ForceHttp = httpOption.ParsedValue;
             options.UseJsonNaming = jsonOption.ParsedValue;
             options.Describe = describeOption.ParsedValue;
+            if (!options.Describe)
+                options.Data = ParseJson(dataOption.ParsedValue);
             var serviceMethod = serviceArgument.Value;
 
             if (serviceMethod != null)
