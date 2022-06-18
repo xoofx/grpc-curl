@@ -1,0 +1,19 @@
+grpc-curl {version} - 2022 (c) Copyright Alexandre Mutel
+
+Usage:
+  grpc-curl <address:port> <service/method> [--data=<json_string>]
+            [--http] [--json]
+  grpc-curl describe <address:port> <service>
+  grpc-curl -h | --help
+  grpc-curl --version
+
+Sub-commands:
+  describe    Describe the service or dump all services available.
+
+Options:
+  --version                 Show version information.
+  -h, --help                Show help information.
+  -d, --data=<json_string>  JSON string to send as a message.
+  --http                    Use HTTP instead of HTTPS unless the
+                            protocol is specified directly on the address.
+  --json                    Use JSON naming for input and output.

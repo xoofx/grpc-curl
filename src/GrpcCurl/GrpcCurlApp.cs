@@ -1,52 +1,51 @@
 ﻿using System.Collections;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using DynamicGrpc;
 using Grpc.Net.Client;
-using McMaster.Extensions.CommandLineUtils;
 namespace GrpcCurl;
+
+public partial class ProgramArguments { }
 
 public class GrpcCurlApp
 {
-    public static async Task<int> Run(string[] args)
+    public static Task<int> Run(string[] args)
     {
-        var exeName = "grpc-curl";
-        var version = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? typeof(Program).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "?.?.?";
+        return ProgramArguments.CreateParser()
+                               .WithVersion(ThisAssembly.Info.InformationalVersion)
+                               .Parse(args)
+                               .Match(Run,
+                                      result => Print(Console.Out, FormatHelp(result.Help)),
+                                      result => Print(Console.Out, result.Version),
+                                      result => Print(Console.Error, FormatHelp(result.Usage), exitCode: 1));
 
-        var app = new CommandLineApplication
+        static string FormatHelp(string text) =>
+            text.Replace("{version}", ThisAssembly.Info.InformationalVersion);
+
+        static Task<int> Print(TextWriter writer, string message, int exitCode = 0)
         {
-            Name = exeName,
-        };
+            writer.WriteLine(message);
+            return Task.FromResult(exitCode);
+        }
+    }
 
+    static async Task<int> Run(ProgramArguments args)
+    {
         var options = new GrpcCurlOptions();
 
-        app.VersionOption("--version", $"{app.Name} {version} - {DateTime.Now.Year} (c) Copyright Alexandre Mutel", version);
-        app.HelpOption(inherited: true);
-
-        var addressArgument = app.Argument("address:port", @"A http/https URL or a simple host:address. If only host:address is used, HTTPS is used by default unless the options --http is passed.").IsRequired();
-        var serviceArgument = app.Argument("service/method", @"The service/method that will be called.");
-
-        var dataOption = app.Option<string>("-d|--data <json_string>", "JSON string to send as a message.", CommandOptionType.SingleValue);
-        var httpOption = app.Option<bool>("--http", "Use HTTP instead of HTTPS unless the protocol is specified directly on the address.", CommandOptionType.NoValue);
-        var jsonOption = app.Option<bool>("--json", "Use JSON naming for input and output.", CommandOptionType.NoValue);
-        var describeOption = app.Option<bool>("--describe", "Describe the service or dump all services available.", CommandOptionType.NoValue);
-
-        app.OnExecuteAsync(async (token) =>
+        int result;
+        try
         {
-            options.Address = addressArgument.Value!;
-            options.ForceHttp = httpOption.ParsedValue;
-            options.UseJsonNaming = jsonOption.ParsedValue;
-            options.Describe = describeOption.ParsedValue;
-            if (!options.Describe)
-                options.Data = ParseJson(dataOption.ParsedValue);
-            var serviceMethod = serviceArgument.Value;
+            options.Address = args.ArgAddressColonPort!;
+            options.ForceHttp = args.OptHttp;
+            options.UseJsonNaming = args.OptJson;
+            options.Describe = args.CmdDescribe;
+            options.Data = args.OptData is { } data ? ParseJson(data) : null;
 
-            if (serviceMethod != null)
+            if ((args.CmdDescribe ? args.ArgService : args.ArgServiceSlashMethod) is { } serviceMethod)
             {
                 var indexOfSlash = serviceMethod.IndexOf('/');
                 if (!options.Describe && indexOfSlash < 0) throw new GrpcCurlException("Invalid symbol. The symbol must contain a slash (/) to separate the service from the method (serviceName/methodName)");
@@ -55,20 +54,11 @@ public class GrpcCurlApp
                 options.Method = indexOfSlash < 0 ? null : serviceMethod.Substring(indexOfSlash + 1);
             }
 
-            return await Run(options);
-        });
-
-        int result = 0;
-        try
-        {
-            result = await app.ExecuteAsync(args);
+            result = await Run(options);
         }
         catch (Exception exception)
         {
-            string text = (exception is UnrecognizedCommandParsingException unrecognizedCommandParsingException)
-                ? $"{unrecognizedCommandParsingException.Message} for command {unrecognizedCommandParsingException.Command.Name}"
-                : $"Unexpected error {exception}";
-            await WriteLineError(text);
+            await WriteLineError($"Unexpected error {exception}");
             result = 1;
         }
 

@@ -24,7 +24,8 @@
     </ResolvedFileToPublish>
 
     <PackageReference Include="Grpc.Net.Client" Version="2.42.0" />
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.1" />
+    <PackageReference Include="docopt.net" Version="0.8.1" />
+    <PackageReference Include="ThisAssembly.AssemblyInfo" Version="1.0.9" />
   </ItemGroup>
 
   <ItemGroup>
