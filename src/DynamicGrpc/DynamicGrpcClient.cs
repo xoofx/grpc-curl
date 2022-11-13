@@ -12,7 +12,7 @@ public sealed class DynamicGrpcClient : ClientBase
     private readonly DynamicFileDescriptorSet _dynamicDescriptorSet;
     private readonly DynamicGrpcClientOptions _options;
 
-    private DynamicGrpcClient(ChannelBase channel, DynamicFileDescriptorSet dynamicDescriptorSet, DynamicGrpcClientOptions options) : base(channel)
+    private DynamicGrpcClient(CallInvoker callInvoker, DynamicFileDescriptorSet dynamicDescriptorSet, DynamicGrpcClientOptions options) : base(callInvoker)
     {
         _dynamicDescriptorSet = dynamicDescriptorSet;
         _options = options;
@@ -44,8 +44,20 @@ public sealed class DynamicGrpcClient : ClientBase
     /// <returns>A dynamic client gRPC instance.</returns>
     public static DynamicGrpcClient FromDescriptors(ChannelBase channel, FileDescriptor[] descriptors, DynamicGrpcClientOptions? options = null)
     {
+        return FromDescriptors(channel.CreateCallInvoker(), descriptors, options);
+    }
+
+    /// <summary>
+    /// Creates a client by using the specified <see cref="FileDescriptor"/>. The descriptors must appear in reverse dependency order (if A depends on B, B should comes first).
+    /// </summary>
+    /// <param name="callInvoker">The gRPC CallInvoker to fetch reflection data from.</param>
+    /// <param name="descriptors">The file descriptors./></param>
+    /// <param name="options">Options for this client.</param>
+    /// <returns>A dynamic client gRPC instance.</returns>
+    public static DynamicGrpcClient FromDescriptors(CallInvoker callInvoker, FileDescriptor[] descriptors, DynamicGrpcClientOptions? options = null)
+    {
         options ??= new DynamicGrpcClientOptions();
-        return new DynamicGrpcClient(channel, DynamicFileDescriptorSet.FromFileDescriptors(descriptors), options);
+        return new DynamicGrpcClient(callInvoker, DynamicFileDescriptorSet.FromFileDescriptors(descriptors), options);
     }
 
     /// <summary>
@@ -57,8 +69,20 @@ public sealed class DynamicGrpcClient : ClientBase
     /// <returns>A dynamic client gRPC instance.</returns>
     public static DynamicGrpcClient FromDescriptorProtos(ChannelBase channel, FileDescriptorProto[] descriptorProtos, DynamicGrpcClientOptions? options = null)
     {
+        return FromDescriptorProtos(channel.CreateCallInvoker(), descriptorProtos, options);
+    }
+
+    /// <summary>
+    /// Creates a client by using the specified <see cref="FileDescriptorProto"/>. The descriptors must appear in reverse dependency order (if A depends on B, B should comes first).
+    /// </summary>
+    /// <param name="callInvoker">The gRPC CallInvoker to fetch reflection data from.</param>
+    /// <param name="descriptorProtos">The file proto descriptors./></param>
+    /// <param name="options">Options for this client.</param>
+    /// <returns>A dynamic client gRPC instance.</returns>
+    public static DynamicGrpcClient FromDescriptorProtos(CallInvoker callInvoker, FileDescriptorProto[] descriptorProtos, DynamicGrpcClientOptions? options = null)
+    {
         options ??= new DynamicGrpcClientOptions();
-        return new DynamicGrpcClient(channel, DynamicFileDescriptorSet.FromFileDescriptorProtos(descriptorProtos), options);
+        return new DynamicGrpcClient(callInvoker, DynamicFileDescriptorSet.FromFileDescriptorProtos(descriptorProtos), options);
     }
 
     /// <summary>
@@ -69,11 +93,24 @@ public sealed class DynamicGrpcClient : ClientBase
     /// <param name="timeoutInMillis">Timeout in milliseconds. Default is 10000ms (10 seconds).</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A dynamic client gRPC instance.</returns>
-    public static async Task<DynamicGrpcClient> FromServerReflection(ChannelBase channel, DynamicGrpcClientOptions? options = null, int timeoutInMillis = 10000, CancellationToken cancellationToken = default)
+    public static Task<DynamicGrpcClient> FromServerReflection(ChannelBase channel, DynamicGrpcClientOptions? options = null, int timeoutInMillis = 10000, CancellationToken cancellationToken = default)
+    {
+        return FromServerReflection(channel.CreateCallInvoker(), options, timeoutInMillis, cancellationToken);
+    }
+
+    /// <summary>
+    /// Creates a client by fetching reflection data from the server. Might trigger an exception if the server doesn't support exception.
+    /// </summary>
+    /// <param name="callInvoker">The gRPC CallInvoker to fetch reflection data from.</param>
+    /// <param name="options">Options for this client.</param>
+    /// <param name="timeoutInMillis">Timeout in milliseconds. Default is 10000ms (10 seconds).</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>A dynamic client gRPC instance.</returns>
+    public static async Task<DynamicGrpcClient> FromServerReflection(CallInvoker callInvoker, DynamicGrpcClientOptions? options = null, int timeoutInMillis = 10000, CancellationToken cancellationToken = default)
     {
         options ??= new DynamicGrpcClientOptions();
-        var dynamicDescriptorSet = await DynamicFileDescriptorSet.FromServerReflection(channel, timeoutInMillis, cancellationToken);
-        return new DynamicGrpcClient(channel, dynamicDescriptorSet, options);
+        var dynamicDescriptorSet = await DynamicFileDescriptorSet.FromServerReflection(callInvoker, timeoutInMillis, cancellationToken);
+        return new DynamicGrpcClient(callInvoker, dynamicDescriptorSet, options);
     }
 
     /// <summary>Invokes a simple remote call in a blocking fashion.</summary>

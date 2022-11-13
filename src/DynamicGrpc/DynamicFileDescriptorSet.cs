@@ -83,10 +83,10 @@ internal sealed class DynamicFileDescriptorSet
         return (inputMessageProto.GetMarshaller(context), outputMessageProto.GetMarshaller(context));
     }
 
-    public static async Task<DynamicFileDescriptorSet> FromServerReflection(ChannelBase channel, int? timeoutInMillis, CancellationToken cancellationToken)
+    public static async Task<DynamicFileDescriptorSet> FromServerReflection(CallInvoker callInvoker, int? timeoutInMillis, CancellationToken cancellationToken)
     {
         // Step 1 - Fetch all services we can interact with
-        var client = new ServerReflection.ServerReflectionClient(channel);
+        var client = new ServerReflection.ServerReflectionClient(callInvoker);
         var response = await SingleRequestAsync(client, new ServerReflectionRequest
         {
             ListServices = ""
