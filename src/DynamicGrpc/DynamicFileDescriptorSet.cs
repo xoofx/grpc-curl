@@ -117,7 +117,7 @@ internal sealed class DynamicFileDescriptorSet
         foreach (var buffer in listOfProtosToLoad)
         {
             var proto = FileDescriptorProto.Parser.ParseFrom(buffer.ToByteArray());
-            protosLoaded.Add(proto.Name, (buffer, proto));
+            protosLoaded.TryAdd(proto.Name, (buffer, proto));
         }
 
         while (protosLoaded.Count > 0)
