@@ -139,7 +139,7 @@ public sealed class DynamicGrpcClient : ClientBase
             if (methodDescriptor.IsServerStreaming)
             {
                 // Full streaming duplex
-                var call = AsyncDuplexStreamingCall(serviceName, methodName);
+                var call = AsyncDuplexStreamingCall(serviceName, methodName, host, options);
                 await foreach (var item in input)
                 {
                     await call.RequestStream.WriteAsync(item);
@@ -155,7 +155,7 @@ public sealed class DynamicGrpcClient : ClientBase
             else
             {
                 // Client streaming only
-                var call = AsyncClientStreamingCall(serviceName, methodName);
+                var call = AsyncClientStreamingCall(serviceName, methodName, host, options);
                 await foreach (var item in input)
                 {
                     await call.RequestStream.WriteAsync(item);
@@ -176,7 +176,7 @@ public sealed class DynamicGrpcClient : ClientBase
                 break; // Take only the first element
             }
 
-            var call = AsyncServerStreamingCall(serviceName, methodName, firstInput ?? new Dictionary<string, object>());
+            var call = AsyncServerStreamingCall(serviceName, methodName, firstInput ?? new Dictionary<string, object>(), host, options);
             var responseStream = call.ResponseStream;
             while (await responseStream.MoveNext())
             {
@@ -193,7 +193,7 @@ public sealed class DynamicGrpcClient : ClientBase
                 break; // Take only the first element
             }
 
-            var result = await AsyncUnaryCall(serviceName, methodName, firstInput ?? new Dictionary<string, object>());
+            var result = await AsyncUnaryCall(serviceName, methodName, firstInput ?? new Dictionary<string, object>(), host, options);
             yield return result;
         }
     }
